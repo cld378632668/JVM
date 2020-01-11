@@ -6,6 +6,9 @@ Class Loader 顾名思义是 用来加载 Class的，用的是双亲委托机制
 
 ![Class Loader](../illustration/pig3-9.png)
 
+![Class Loader](https://github.com/cld378632668/JVM/blob/master/illustration/pic3-9.png)
+
+
 # Excution Engine
 这一部分不是面试考查点。在本节我们简单了解下执行引擎即可。详细讲解见另一篇文章。
 
