@@ -2,10 +2,10 @@
 
 # Class Loader 部分的重点是掌握双亲委托机制
 
-Class Loader 顾名思义是 用来加载 Class的，用的是双亲委托机制（这个会在另一篇文章中细讲）。两个类相同，既需要类名相同也需要是被同一个类的加载器加载，否则认为是不同的类。
+Class Loader 顾名思义是 用来加载 Class的，用的是双亲委托机制（这个会在另一篇文章中细讲）。两个类相同，既需要类名相同也需要是被同一个类的加载器加载，否则认为是不同的类。.class文件加载为类的实例的过程如下图所示。
 
 ![Class Loader](../illustration/pig3-9.png)
-
+![Class Loader](..\illustration\pig3-9.png)
 ![Class Loader](https://github.com/cld378632668/JVM/blob/master/illustration/pic3-9.png)
 
 

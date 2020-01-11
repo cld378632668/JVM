@@ -1,0 +1,61 @@
+JVM优化之压缩普通对象指针（CompressedOops）
+
+ 
+通常64位JVM消耗的内存会比32位的大1.5倍，这是因为对象指针在64位架构下，长度会翻倍（更宽的寻址）。
+对于那些将要从32位平台移植到64位的应用来说，平白无辜多了1/2的内存占用，这是开发者不愿意看到的。
+幸运的是，从JDK 1.6 update14开始，64 bit JVM正式支持了 -XX:+UseCompressedOops 这个可以压缩指针，起到节约内存占用的新参数。
+
+ 
+
+1、 什么是 OOP ?
+
+OOP = “ordinary object pointer” 普通对象指针。
+
+启用CompressOops后，会压缩的对象：
+• 每个Class的属性指针（静态成员变量）
+• 每个对象的属性指针
+• 普通对象数组的每个元素指针
+
+当然，压缩也不是万能的，针对一些特殊类型的指针，JVM是不会优化的。
+比如指向PermGen的Class对象指针，本地变量，堆栈元素，入参，返回值，NULL指针不会被压缩。
+
+ 
+
+2、怎么启用？
+
+在启动java时，加 -XX:+UseCompressedOops (需要jdk1.6.0_14)
+
+ 
+
+3、CompressedOops的原理
+原理，解释器在解释字节码时，植入压缩指令（不影响正常和JVM优化后的指令顺序）。
+具体逻辑是，当对象被读取时，解压，存入heap时，压缩。
+
+压缩指令伪码
+
+! int R8; oop[] R9; // R9 is 64 bits
+! oop R10 = R9[R8]; // R10 is 32 bits
+! load compressed ptr from wide base ptr:
+movl R10, [R9 + R8<<3 + 16]
+! klassOop R11 = R10._klass; // R11 is 32 bits
+! void* const R12 = GetHeapBase();
+! load compressed klass ptr from compressed base ptr:
+movl R11, [R12 + R10<<3 + 8]
+
+ 
+
+4、零基压缩优化(Zero Based Compressd Oops)
+零基压缩是针对压解压动作的进一步优化。
+它通过改变正常指针的随机地址分配特性，强制从零开始做分配（需要OS支持），进一步提高了压解压效率。
+
+要启用零基压缩，你分配给JVM的内存大小必须控制在4G以上，32G以下。
+如果小于4G，那么JVM会使用低虚拟地址空间（low virutal address space，64位下模拟32位），这样就不需要做压解压动作了。
+而对于大于32G，将采用默认的随机地址分配特性，进行压解压。
+
+ 
+
+5、适用场景
+CompressedOops，可以让跑在64位平台下的JVM，不需要因为更宽的寻址，而付出Heap容量损失的代价。
+
+6、缺点
+因为要对指令做压缩和解压缩，对 JVM 有额外的开销。
